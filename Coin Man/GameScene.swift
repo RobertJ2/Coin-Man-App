@@ -15,11 +15,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var coinTimer : Timer?
     var ground : SKSpriteNode?
     var ceil : SKSpriteNode?
+    var scoreLabel : SKLabelNode?
     
     let coinManCategory : UInt32 = 0x1 << 1
     let coinCategory : UInt32 = 0x1 << 2
     let bombCategory : UInt32 = 0x1 << 3
     let groundAndCeilCategory : UInt32 = 0x1 << 4
+    
+    var score = 0
     
     override func didMove(to view: SKView) {
         
@@ -37,6 +40,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ceil = childNode(withName: "ceil") as? SKSpriteNode
         ceil?.physicsBody?.categoryBitMask = groundAndCeilCategory
         ceil?.physicsBody?.collisionBitMask = coinManCategory
+        
+        scoreLabel = childNode(withName: "scoreLabel") as? SKLabelNode
         
         
         coinTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { (timer) in
@@ -80,7 +85,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        print("Contact!")
+        
+        score += 1
+        scoreLabel?.text = "Score: \(score)"
+        
+        if contact.bodyA.categoryBitMask == coinCategory {
+            contact.bodyA.node?.removeFromParent()
+        }
+        if contact.bodyB.categoryBitMask == coinCategory {
+            contact.bodyB.node?.removeFromParent()
+        }
     }
 
 }
