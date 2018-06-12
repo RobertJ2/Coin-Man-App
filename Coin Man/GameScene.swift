@@ -14,7 +14,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var coinMan : SKSpriteNode?
     var coinTimer : Timer?
     var bombTimer : Timer?
-    var ground : SKSpriteNode?
     var ceil : SKSpriteNode?
     var scoreLabel : SKLabelNode?
     var yourScoreLabel : SKLabelNode?
@@ -35,10 +34,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         coinMan?.physicsBody?.categoryBitMask = coinManCategory
         coinMan?.physicsBody?.contactTestBitMask = coinCategory | bombCategory
         coinMan?.physicsBody?.collisionBitMask = groundAndCeilCategory
+        var coinManRun : [SKTexture] = []
+        for number in 1...4 {
+            coinManRun.append(SKTexture(imageNamed: "frame-\(number)"))
+        }
         
-        ground = childNode(withName: "ground") as? SKSpriteNode
-        ground?.physicsBody?.categoryBitMask = groundAndCeilCategory
-        ground?.physicsBody?.collisionBitMask = coinManCategory
+        coinMan?.run(SKAction.repeatForever(SKAction.animate(with: coinManRun, timePerFrame: 0.09))
+)
+        
+        
         
         ceil = childNode(withName: "ceil") as? SKSpriteNode
         ceil?.physicsBody?.categoryBitMask = groundAndCeilCategory
@@ -48,8 +52,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         startTimers()
-        
+        createGrass()
     }
+    
+    func createGrass() {
+        let sizingGrass = SKSpriteNode(imageNamed: "grass")
+        let numberOfGrass = Int(size.width / sizingGrass.size.width) + 1
+        for number in 0...numberOfGrass {
+            let grass = SKSpriteNode(imageNamed: "grass")
+            grass.physicsBody = SKPhysicsBody(rectangleOf: grass.size)
+            grass.physicsBody?.categoryBitMask = groundAndCeilCategory
+            grass.physicsBody?.collisionBitMask = coinManCategory
+            grass.physicsBody?.affectedByGravity = false
+            grass.physicsBody?.isDynamic = false
+            addChild(grass)
+            
+            let grassX = -size.width / 2 + grass.size.width / 2 + grass.size.width * CGFloat(number)
+            grass.position = CGPoint(x: grassX, y: -size.height / 2 + grass.size.height / 2 - 18)
+            
+            
+            let speed = 100.0
+            let firstmoveLeft = SKAction.moveBy(x: -grass.size.width - grass.size.width * CGFloat(number), y: 0, duration: TimeInterval(grass.size.width + grass.size.width * CGFloat(number)) / speed)
+
+            let resetGrass = SKAction.moveBy(x: size.width + grass.size.width, y: 0, duration: 0)
+            let grassFullMove = SKAction.moveBy(x: -size.width - grass.size.width, y: 0, duration: TimeInterval(size.width + grass.size.width) / speed)
+            let grassMovingForever = SKAction.repeatForever(SKAction.sequence([grassFullMove, resetGrass]))
+            
+            grass.run(SKAction.sequence([firstmoveLeft, resetGrass, grassMovingForever]))
+            
+        }
+    }
+    
+    
+    
+    
     
     func startTimers() {
         
@@ -102,9 +138,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(coin)
         
         
+        let sizingGrass = SKSpriteNode(imageNamed: "grass")
         
         let maxY = size.height / 2 - coin.size.height / 2
-        let minY = -size.height / 2 + coin.size.height / 2
+        let minY = -size.height / 2 + coin.size.height / 2 + sizingGrass.size.height
         let range = maxY - minY
         let coinY = maxY - CGFloat(arc4random_uniform(UInt32(range)))
         
@@ -128,9 +165,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(bomb)
         
         
-        
+        let sizingGrass = SKSpriteNode(imageNamed: "grass")
         let maxY = size.height / 2 - bomb.size.height / 2
-        let minY = -size.height / 2 + bomb.size.height / 2
+        let minY = -size.height / 2 + bomb.size.height / 2 + sizingGrass.size.height
         let range = maxY - minY
         let bombY = maxY - CGFloat(arc4random_uniform(UInt32(range)))
         
